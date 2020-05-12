@@ -1,0 +1,24 @@
+{
+  "size": 0, 
+  "query": {
+    "bool": {
+      "must": [
+        {"term": {"Level.keyword": "ERROR"}},
+        { "range" : {
+            "Date" : {
+                "gte" : 9999900000,
+                "lte" :  9999911111
+            }
+        }}
+      ]
+    }
+  },
+  "aggs" : {
+        "application" : {
+            "terms": {
+              "field": "Message.keyword",
+              "size": 100
+            }
+        }
+    }
+}

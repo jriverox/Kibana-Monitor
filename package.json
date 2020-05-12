@@ -1,0 +1,34 @@
+{
+  "name": "kibana-error-watcher-poc",
+  "version": "1.0.0",
+  "description": "Proof of concept about watch errors fron logs stored in kibana (elasticsearch) and send notification",
+  "main": "index.js",
+  "scripts": {
+    "start": "cross-env NODE_ENV=stage node src/index-no-lambda.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jriverox/kibana-error-watcher-poc.git"
+  },
+  "keywords": [
+    "lambda",
+    "aws",
+    "kibana",
+    "elasticsearch"
+  ],
+  "author": "jhony rivero",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/jriverox/kibana-error-watcher-poc/issues"
+  },
+  "homepage": "https://github.com/jriverox/kibana-error-watcher-poc#readme",
+  "dependencies": {
+    "elasticsearch": "^16.6.0",
+    "yenv": "^2.1.1"
+  },
+  "devDependencies": {
+    "aws-sdk": "^2.643.0",
+    "cross-env": "^7.0.2"
+  }
+}
