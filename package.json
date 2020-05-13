@@ -4,6 +4,10 @@
   "description": "Proof of concept about watch errors fron logs stored in kibana (elasticsearch) and send notification",
   "main": "index.js",
   "scripts": {
+    "clean": "rimraf dist",
+    "lint": "eslint src/ -f stylish",
+    "prebuild": "npm run clean && npm run lint && echo '--prebuild finished--'",
+    "build": "mkdirp dist && cpy *.json env.yaml ./src/ --parents dist/ && cd dist && npm install --production && npm-pack-zip && echo '--build finished--'",
     "start": "cross-env NODE_ENV=stage node src/index-no-lambda.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -29,6 +33,20 @@
   },
   "devDependencies": {
     "aws-sdk": "^2.643.0",
-    "cross-env": "^7.0.2"
+    "cpy-cli": "^3.1.1",
+    "cross-env": "^7.0.2",
+    "eslint": "^7.0.0",
+    "eslint-config-prettier": "^6.11.0",
+    "eslint-config-standard": "^14.1.1",
+    "eslint-plugin-import": "^2.20.2",
+    "eslint-plugin-node": "^11.1.0",
+    "eslint-plugin-prettier": "^3.1.3",
+    "eslint-plugin-promise": "^4.2.1",
+    "eslint-plugin-standard": "^4.0.1",
+    "mkdirp": "^1.0.4",
+    "nodemon": "^2.0.3",
+    "npm-pack-zip": "^1.2.7",
+    "prettier": "^2.0.5",
+    "rimraf": "^3.0.2"
   }
 }
