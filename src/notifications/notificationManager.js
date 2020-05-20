@@ -6,9 +6,14 @@ module.exports = class NotificationSender {
     AWS.config.update({ region: this.applicationConfig.SNS.REGION })
   }
 
-  async send(message) {
+  /**
+   *
+   * @param {object} notification is an object that contains two properties subject and message
+   */
+  async send(notification) {
     const params = {
-      Message: message /* required */,
+      Subject: notification.subject,
+      Message: notification.message,
       TopicArn: this.applicationConfig.SNS.TOPIC_ARN,
     }
     const sns = new AWS.SNS({ apiVersion: '2010-03-31' })

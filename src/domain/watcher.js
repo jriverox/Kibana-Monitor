@@ -6,6 +6,7 @@ const env = yenv()
 
 module.exports = class Watcher {
   constructor(applicationName = '') {
+    console.log(applicationName)
     this.applicationConfig = env.APPLICATIONS.find((x) => {
       return x.NAME === applicationName
     })
@@ -13,49 +14,63 @@ module.exports = class Watcher {
       throw new Error(`No se ha encontrado la aplicacion: ${applicationName} en la configuracion`)
     this.notificationManager = new NotificationManager(this.applicationConfig)
   }
-  getRangeHour(){
-    var defaultHourStart ,defaultHourEnd,regex ,configHourStart , configHourEnd , hourStar , HourEnd;
-    defaultHourStart ="6:0";
-    defaultHourEnd ="20:0";
-    configHourStart =this.applicationConfig.HOURSTART;
-    configHourEnd=this.applicationConfig.HOUREND;
-    regex =/\b(2[0-3]|[01]?[0-9]):([0-5]?[0-9])\b/;
-     if(configHourStart && !regex.test(configHourStart))
-       configHourStart=defaultHourStart;
-     if(configHourEnd && !regex.test(configHourEnd))
-       configHourEnd=defaultHourEnd;
 
-       hourStar =  configHourStart.split(":");
-       HourEnd =  configHourEnd.split(":");
-       var fechaIni = new Date();
-       var fechaFin = new Date();
-       
-       fechaIni.setHours(hourStar[0] ,hourStar[1] ,0 ,0);
-       fechaFin.setHours(HourEnd[0] ,HourEnd[1],0 ,0);
+  getHourRange() {
+    const defaultStartHour = '6:0'
+    const defaultEndHour = '20:0'
+    let configStartHour = this.applicationConfig.START_HOUR
+    let configEndHour = this.applicationConfig.END_HOUR
+    const regex = /\b(2[0-3]|[01]?[0-9]):([0-5]?[0-9])\b/
 
-      return { hourStar : fechaIni , HourEnd  : fechaFin }
+    if (configStartHour && !regex.test(configStartHour)) {
+      configStartHour = defaultStartHour
+    }
+
+    if (configEndHour && !regex.test(configEndHour)) {
+      configEndHour = defaultEndHour
+    }
+
+    const startHour = configStartHour.split(':')
+    const endHour = configEndHour.split(':')
+    const startDate = new Date()
+    const endDate = new Date()
+
+    startDate.setHours(startHour[0], startHour[1], 0, 0)
+    endDate.setHours(endHour[0], endHour[1], 0, 0)
+
+    return { start: startDate, end: endDate }
   }
+
   async verify() {
-    var today  , rangeHour ;
-    today= new Date();
-    rangeHour =this.getRangeHour();
+    const today = new Date()
+    const hourRange = this.getHourRange()
     const repository = new LogRepository(this.applicationConfig)
     const data = await repository.getData()
-    console.log(data.aggregations.application.buckets)
+    // console.log(data.aggregations.application.buckets)
     const evaluatedBuckets = this.getBucketsGreaterThanThreshold(
       data.aggregations.application.buckets,
       this.applicationConfig.THRESHOLD,
     )
+    const mustNotify = today >= hourRange.start && today < hourRange.end
+    const messages = []
+
     if (evaluatedBuckets.length > 0) {
       // notificar por supera el umbral
-      for (const bucket of evaluatedBuckets) {
-        const message = `Bucket: ${bucket.key} supera el umbral, valor: ${bucket.doc_count}`
-        console.log(message);
-        if(today >=rangeHour.hourStar  && today < rangeHour.HourEnd )
-           await this.notify(message)
-        else
-        console.log('Not Notification ');
- 
+      for (let index = 0; index < evaluatedBuckets.length; index++) {
+        const bucket = evaluatedBuckets[index]
+        // eslint-disable-next-line prettier/prettier
+        const message = `${index + 1}- Mensaje del error: ${bucket.key}, Cantidad de registros: ${bucket.doc_count}\r\n`
+        messages.push(message)
+      }
+      console.log(messages)
+      if (messages.length > 0 && mustNotify) {
+        await this.notify(messages)
+      } else {
+        console.log(
+          `Nada que notificar, umbral: ${this.applicationConfig.THRESHOLD}, mensajes: ${
+            messages.length
+          }, esta fuera del horario: ${!mustNotify}`,
+        )
       }
     }
   }
@@ -71,7 +86,11 @@ module.exports = class Watcher {
     return result
   }
 
-  async notify(message) {
-    await this.notificationManager.send(message)
+  async notify(messages) {
+    const notification = {
+      subject: `Notificación de Errores Recurrentes de ${this.applicationConfig.NAME}`,
+      message: messages.join('\r\n'),
+    }
+    await this.notificationManager.send(notification)
   }
 }

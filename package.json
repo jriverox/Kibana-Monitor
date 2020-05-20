@@ -7,7 +7,8 @@
     "clean": "rimraf dist",
     "lint": "eslint src/ -f stylish",
     "prebuild": "npm run clean && npm run lint && echo '--prebuild finished--'",
-    "build": "mkdirp dist && cpy *.json env.yaml ./src/ --parents dist/ && cd dist && npm install --production && npm-pack-zip && echo '--build finished--'",
+    "build": "mkdirp dist && cpy *.json env.yaml ./src/ --parents dist/ && cd dist && npm install --production && echo '--build finished--'",
+    "pack": "cd dist && npm-pack-zip && echo '--zipped finished--",
     "start": "cross-env NODE_ENV=stage node src/index-no-lambda.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
